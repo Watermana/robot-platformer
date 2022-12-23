@@ -18,7 +18,8 @@ function resizeCanvas() {
 
 // Cross-browser support for requestAnimationFrame
 const w = window;
-const requestAnimationFrame = w.requestAnimationFrame || w.webkitRequestAnimationFrame || w.msRequestAnimationFrame || w.mozRequestAnimationFrame;
+const requestAnimationFrame = w.requestAnimationFrame || w.webkitRequestAnimationFrame || 
+    w.msRequestAnimationFrame || w.mozRequestAnimationFrame;
 
 // Global Variables
 let requestId;
@@ -352,10 +353,10 @@ eventListeners();
         direction: 'right'
     };
 
+//Destructure levels objects
 const {initialCoins, platforms, flag, ladders } = levels;
 
 // Create gold coin objects
-
 let coins = initialCoins.map(function(coin) {
     return {
         x: coin.x,
@@ -367,7 +368,8 @@ let coins = initialCoins.map(function(coin) {
 
 // Update game objects every frame
 const updateGame = function(modifier) {
-  // console.log(hero.yVelocity)
+    // console.log(hero.y, canvas.height)
+
     if (32 in keysDown) { // Player holding space bar
         if (hero.isOnGround) {
           hero.yVelocity = hero.jumpForce;
@@ -377,6 +379,46 @@ const updateGame = function(modifier) {
       if (83 in keysDown) { // Player holding s
         hero.y += hero.speed * modifier;
       }
+
+      //Scroll up if hero hits top edge of canvas
+      if(hero.y < 0) {
+        hero.y = 0;
+        platforms.forEach(function(platform) {
+          platform.y -= hero.jumpForce * modifier;
+        });
+        // Modify coin positions if player moves left
+        coins.forEach(function(coin) {
+          coin.y -= hero.jumpForce * modifier;
+        });
+        // Modify flag position
+        flag.y -= hero.jumpForce * modifier;
+        //Modify ladders
+        ladders.forEach(function(ladder) {
+          ladder.y -= hero.jumpForce * modifier;
+        })
+      }
+
+      //Scroll down if hero hits bottom edge of canvas
+      if(hero.y > canvas.height - heroImage.height) {
+        if(hero.isOnGround == true) {
+          hero.y = canvas.height - heroImage.height + 150;
+        }
+        hero.y = canvas.height - heroImage.height;
+        platforms.forEach(function(platform) {
+          platform.y += hero.jumpForce * modifier;
+        });
+        // Modify coin positions if player moves left
+        coins.forEach(function(coin) {
+          coin.y += hero.jumpForce * modifier;
+        });
+        // Modify flag position
+        flag.y += hero.jumpForce * modifier;
+        //Modify ladders
+        ladders.forEach(function(ladder) {
+          ladder.y += hero.jumpForce * modifier;
+        })
+      }
+
       if (65 in keysDown) { // Player holding a
           hero.x -= hero.speed * modifier;
 
@@ -423,11 +465,11 @@ const updateGame = function(modifier) {
       // Update hero's vertical position
       hero.y += hero.yVelocity * modifier;
       hero.yVelocity += 1000 * modifier; // Gravity
-    
+
       //Check if hero falls into the void
-      if(hero.y > canvas.height) {
-        gameState = 'over';
-      }
+      // if(hero.y > 720) {
+      //   gameState = 'over';
+      // }
 
       // Check if hero is on ground
       platforms.forEach(function(platform) {
@@ -488,7 +530,7 @@ const updateGame = function(modifier) {
       }
 }
 
-//main render
+// ** Main Render ** //
 //draw game objects after receiving updated position data
 const renderGame = function() {
     //Draw background
@@ -540,11 +582,13 @@ const resetGame = function() {
         // Reset platform positions
         platforms.forEach(function(platform) {
           platform.x = platform.originalX;
+          platform.y = platform.originalY;
         });
     
         // Resert Ladder postions
         ladders.forEach(function(ladder) {
           ladder.x = ladder.originalX;
+          ladder.y = ladder.originalY;
         })
 
         // Reset gold coin positions
@@ -552,12 +596,14 @@ const resetGame = function() {
             return {
               x: coin.x,
               y: coin.y,
-              originalX: coin.x
+              originalX: coin.x,
+              originalY: coin.y
             };
           });
 
         // Reset flag position
         flag.x = flag.originalX;
+        flag.y = flag.originalY;
 }
 
   // Show game over screen
