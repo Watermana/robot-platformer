@@ -34,7 +34,7 @@ let stageX = 0;
 let playerImage = 'assets/hero-images/hero-0-0-0';
 // Load game assets
 
-  // Load background image
+    // Load background image
     const bgImage = new Image();
     bgImage.src = 'assets/background-left.png';
 
@@ -78,12 +78,22 @@ const eventListeners = () => {
 
     const _return2Main = document.getElementById('return-2-main');
     _return2Main.addEventListener('click', function() {
-        gameState = 'menu';
+      mainMenuScreen.style.display = 'block';
+      lvlSelectScreen.style.display = 'none';
+      pauseScreen.style.display = 'none';
+      gameScreen.style.display = 'none';
+      shopScreen.style.display = 'none';  
+      gameState = 'menu';
     })
 
     const _gameReturn2Menu = document.getElementById('game-return-to-menu');
     _gameReturn2Menu.addEventListener('click', function() {
         resetGame();
+        mainMenuScreen.style.display = 'block';
+        lvlSelectScreen.style.display = 'none';
+        pauseScreen.style.display = 'none';
+        gameScreen.style.display = 'none';
+        shopScreen.style.display = 'none';
         gameState = 'menu';
     })
 
@@ -101,6 +111,11 @@ const eventListeners = () => {
 
     const _shopReturn = document.getElementById('shop-return-to-menu');
     _shopReturn.addEventListener('click', function() {
+      mainMenuScreen.style.display = 'block';
+      lvlSelectScreen.style.display = 'none';
+      pauseScreen.style.display = 'none';
+      gameScreen.style.display = 'none';
+      shopScreen.style.display = 'none';
       gameState = 'menu';
     })
 
@@ -409,8 +424,12 @@ const updateGame = function(modifier) {
       hero.y += hero.yVelocity * modifier;
       hero.yVelocity += 1000 * modifier; // Gravity
     
+      //Check if hero falls into the void
+      if(hero.y > canvas.height) {
+        gameState = 'over';
+      }
+
       // Check if hero is on ground
-      
       platforms.forEach(function(platform) {
         if (
           hero.y + heroImage.height > platform.y &&
@@ -421,7 +440,6 @@ const updateGame = function(modifier) {
           hero.isOnGround = true;
           hero.y = platform.y - heroImage.height;
           hero.yVelocity = 0;
-          // console.log((hero.y + heroImage.height), hero.y, (platform.y));
         }
       });
     
@@ -507,9 +525,7 @@ const renderGame = function() {
       // Draw hero
       ctx.drawImage(heroImage, hero.x, hero.y);  
       
-      if(hero.y > canvas.height) {
-        gameState = 'over';
-      }
+
 }
 
 //Reset game environment
@@ -559,11 +575,6 @@ const resetGame = function() {
 // Main Menu Rendering 
 const renderMainMenu = function() {
     
-    mainMenuScreen.style.display = 'block';
-    lvlSelectScreen.style.display = 'none';
-    pauseScreen.style.display = 'none';
-    gameScreen.style.display = 'none';
-    shopScreen.style.display = 'none';
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
     ctx.drawImage(coinDisplay, 24, 32, 150, 55);
@@ -610,7 +621,15 @@ const loadPlayerImage = function() {
 
   playerImage = `assets/hero-images/hero-${top}-${torso}-${legs}`;
   heroImage.src = playerImage + '.png';
-  console.log(playerImage)
+  // console.log(playerImage)
+}
+
+const loadMainMenu = function() {
+  mainMenuScreen.style.display = 'block';
+  lvlSelectScreen.style.display = 'none';
+  pauseScreen.style.display = 'none';
+  gameScreen.style.display = 'none';
+  shopScreen.style.display = 'none';
 }
 
 // Game loop
@@ -662,6 +681,7 @@ const gameLoop = function() {
 const init = function() {
     loadPlayerData();
     loadPlayerImage();
+    loadMainMenu();
     gameLoop();
 }
 
